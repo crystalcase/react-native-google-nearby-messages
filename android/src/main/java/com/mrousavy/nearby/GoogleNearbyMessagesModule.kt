@@ -13,8 +13,7 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.nearby.Nearby
-import com.google.android.gms.nearby.messages.Message
-import com.google.android.gms.nearby.messages.Distance
+import com.google.android.gms.nearby.messages.*
 import java.util.*
 
 val defaultDiscoveryModes = Strategy.DISCOVERY_MODE_BROADCAST or Strategy.DISCOVERY_MODE_SCAN
@@ -27,11 +26,9 @@ class GoogleNearbyMessagesModule(reactContext: ReactApplicationContext) : ReactC
         MESSAGE_LOST("MESSAGE_LOST"),
         BLUETOOTH_ERROR("BLUETOOTH_ERROR"),
         PERMISSION_ERROR("PERMISSION_ERROR"), // doesn't exist on Android
-        MESSAGE_NO_DATA_ERROR("MESSAGE_NO_DATA_ERROR");
-        DISTANCE_CHANGED("DISTANCE_CHANGED");
+        MESSAGE_NO_DATA_ERROR("MESSAGE_NO_DATA_ERROR"),
+        DISTANCE_CHANGED("DISTANCE_CHANGED"),
         BLE_SIGNAL_CHANGED("BLE_SIGNAL_CHANGED");
-        DISTANCE_NO_DATA_ERROR("DISTANCE_NO_DATA_ERROR");
-        BLE_SIGNAL_NO_DATA_ERROR("BLE_SIGNAL_NO_DATA_ERROR");
 
         override fun toString(): String {
             return _type
@@ -260,31 +257,25 @@ class GoogleNearbyMessagesModule(reactContext: ReactApplicationContext) : ReactC
         }
     }
 
-    fun handleOnDistanceChange(message: Message, distance: Distance) {
-        if (message.content == null) {
-            emitErrorEvent(EventType.MESSAGE_NO_DATA_ERROR, "message has no data!")
-        }
-        else if(distance.getMeters() == null) {
-            emitErrorEvent(EventType.DISTANCE_NO_DATA_ERROR, "distance.getMeters() has no data!")
-        }
-        else{
-            val messageString = String(message.content + " " + distance.getMeters() + "m")
-            Log.d(name, "GNM_BLE: Distance changed: $messageString")
+    fun handleOnDistanceChanged(message: Message, distance: Distance) {
+        if (message.content != null) {
+            val messageString = String(message.content)
+            val distanceVal = distance.meters;
+            Log.d(name, "GNM_BLE: Distance changed: $messageString , $distanceVal m")
             emitMessageEvent(EventType.DISTANCE_CHANGED, messageString)
+        } else {
+            emitMessageEvent(EventType.MESSAGE_NO_DATA_ERROR, "message has no data!")
         }
     }
 
-    fun handleOnBleSignalChange(message: Message, bleSignal: BleSignal) {
-        if (message.content == null) {
-            emitErrorEvent(EventType.MESSAGE_NO_DATA_ERROR, "message has no data!")
-        }
-        else if(bleSignal.getRssi() == null) {
-            emitErrorEvent(EventType.BLE_SIGNAL_NO_DATA_ERROR, "bleSignal.getRssi() has no data!")
-        }
-        else{
-            val messageString = String(message.content + " " + bleSignal.getRssi() + "dBm")
-            Log.d(name, "GNM_BLE: BLE Signal changed: $messageString")
+    fun handleOnBleSignalChanged(message: Message, bleSignal: BleSignal) {
+        if (message.content != null) {
+            val messageString = String(message.content)
+            val bleSignalVal = bleSignal.rssi
+            Log.d(name, "GNM_BLE: BLE Signal changed: $messageString , $bleSignalVal dBm")
             emitMessageEvent(EventType.BLE_SIGNAL_CHANGED, messageString)
+        } else {
+            emitMessageEvent(EventType.MESSAGE_NO_DATA_ERROR, "message has no data!")
         }
     }
 
