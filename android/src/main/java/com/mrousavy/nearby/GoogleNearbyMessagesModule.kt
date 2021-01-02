@@ -72,10 +72,12 @@ class GoogleNearbyMessagesModule(reactContext: ReactApplicationContext) : ReactC
             }
 
             override fun onDistanceChanged(message: Message, distance: Distance) {
+                Log.i("onDistanceChanged:", message.toString())
                 handleOnDistanceChanged(message, distance)
             }
 
             override fun onBleSignalChanged(message: Message, bleSignal: BleSignal) {
+                Log.i("onBleSignalChanged:", message.toString())
                 handleOnBleSignalChanged(message, bleSignal)
             }
         }
